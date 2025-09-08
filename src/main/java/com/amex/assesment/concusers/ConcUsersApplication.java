@@ -1,4 +1,4 @@
-package com.amex.assesment.conc-users;
+package com.amex.assesment.concusers;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
