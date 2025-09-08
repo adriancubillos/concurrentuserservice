@@ -1,120 +1,105 @@
-# concurrentuserservice
+# Concurrent User Service
 
-1.  Project Scaffolding and Setup
+This project is a high-performance, non-blocking REST API for managing a collection of users. It is built using Vert.x for the web layer and Spring Boot for dependency injection, providing a robust and scalable solution for handling concurrent requests.
 
-    Initialize Project: Use the Spring Initializr to generate a new Spring Boot project.
+The service uses an in-memory, thread-safe data store.
 
-    Select Dependencies: Include the following starters:
+## Architecture
 
-        Spring Web: For building the RESTful API endpoints.
+The application follows a layered architecture:
 
-        Spring Boot DevTools: For automatic restarts during development.
+-   **Web Layer (Vert.x)**: The `MainVerticle` sets up a non-blocking HTTP server and a router. It defines all API endpoints and forwards requests to the appropriate handler.
+-   **Handler Layer**: The `UserHandler` class contains the logic for handling HTTP requests, parsing request bodies, validating data, and calling the service layer.
+-   **Service Layer**: The `UserService` interface defines the business logic contract, and `InMemoryUserService` provides the implementation, orchestrating calls to the data store.
+-   **Data Store Layer**: The `UserDatastore` interface defines the contract for data storage. `InMemoryUserDatastore` provides a thread-safe, in-memory implementation using `ConcurrentHashMap` and `AtomicLong` for ID generation.
 
-        Lombok: To reduce boilerplate code (like getters, setters, and constructors) in model classes.
+## API Endpoints
 
-        Validation: For declarative validation of request data.
+The following endpoints are available:
 
-2.  Domain Modeling
+| Method   | Path                | Description                          |
+| :------- | :------------------ | :----------------------------------- |
+| `GET`    | `/users`            | Retrieves a list of all users.       |
+| `POST`   | `/users`            | Creates a new user.                  |
+| `GET`    | `/users/{id}`       | Retrieves a single user by their ID. |
+| `PUT`    | `/users/{id}`       | Updates a user's name and email.     |
+| `PUT`    | `/users/{id}/email` | Updates a user's email only.         |
+| `DELETE` | `/users/{id}`       | Deletes a user by their ID.          |
 
-    Define the User Model: Create a User class with the required fields: id (unique identifier), name, and email.
+## Validation and Error Handling
 
-    Add Constraints: Use Jakarta Bean Validation annotations (e.g., @NotNull, @Email, @Size) on the model fields to enforce data integrity rules.
+The API includes robust validation and error handling:
 
-3.  Data Storage and Access (In-Memory)
+-   **Input Validation**: Incoming data for user creation and updates is validated to ensure that `name` and `email` fields are not blank and that the `email` has a valid format.
+-   **Duplicate Email Check**: The service prevents the creation of users with duplicate emails and also prevents a user from updating their email to one that is already in use by another user (`409 Conflict`).
+-   **Not Found Errors**: Accessing, updating, or deleting a non-existent user will result in a `404 Not Found` error.
+-   **Malformed JSON**: Requests with invalid JSON will be rejected with a `400 Bad Request`.
 
-    Choose Data Structure: Select a thread-safe data structure for storing users. A ConcurrentHashMap<Long, User> is ideal for this, as it allows for safe concurrent reads and writes.
+## How to Run
 
-    Plan ID Generation: Design a mechanism for generating unique, sequential user IDs. An AtomicLong is the perfect tool for ensuring thread-safe ID increments.
+### Prerequisites
 
-4.  Service Layer Design
+-   Java 21
+-   Maven
 
-    Define the UserService Interface: Create an interface to define the contract for user management operations. This promotes loose coupling and makes the system easier to test and extend later (e.g., switching to a database implementation).
+### Running Locally
 
-    Specify CRUD Methods: Outline the core methods in the interface:
-
-        createUser(CreateUserRequest request)
-
-        getUserById(Long id)
-
-        getAllUsers()
-
-        updateUser(Long id, UpdateUserRequest request)
-
-        deleteUser(Long id)
-
-    Implement the Service: Create a UserServiceImpl class that implements the UserService interface. This class will contain the business logic and interact with the in-memory data store.
-
-5.  API Layer (Controller)
-
-    Design REST Endpoints: Plan the RESTful API endpoints in a UserController. Map the CRUD operations to standard HTTP methods:
-
-        POST /api/users: Create a new user.
-
-        GET /api/users/{id}: Retrieve a single user.
-
-        GET /api/users: Retrieve a list of all users.
-
-        PUT /api/users/{id}: Update an existing user.
-
-        DELETE /api/users/{id}: Delete a user.
-
-    Define Data Transfer Objects (DTOs): Create separate request/response classes (e.g., CreateUserRequest, UserResponse) to decouple the API layer from the internal domain model. This provides flexibility and security.
-
-6.  Error and Exception Handling
-
-    Create Custom Exceptions: Define specific, custom exceptions to represent business errors, such as:
-
-        UserNotFoundException
-
-        EmailAlreadyExistsException
-
-    Implement a Global Exception Handler: Use a class annotated with @ControllerAdvice to centralize exception handling. This will catch the custom exceptions from the service layer and translate them into appropriate HTTP status codes (e.g., 404 Not Found, 409 Conflict) and consistent JSON error responses.
-
-7.  Testing Strategy
-
-    Unit Tests: Plan unit tests for the UserServiceImpl class. The goal is to test the business logic in isolation.
-
-        Verify user creation, retrieval, updates, and deletion.
-
-        Test edge cases, such as attempting to retrieve a non-existent user.
-
-        Ensure that appropriate exceptions are thrown for invalid operations (e.g., creating a user with a duplicate email).
-
-    Integration Tests: Plan integration tests for the UserController class. The goal is to test the full request-response cycle.
-
-        Use MockMvc to send simulated HTTP requests to the API endpoints.
-
-        Assert that the correct HTTP status codes are returned.
-
-        Verify the content of the JSON responses.
-
-        Check the state of the in-memory store after operations.
-
-    Concurrency Tests (Optional but Recommended): Outline a simple test case to verify thread safety by having multiple threads attempt to create or modify users concurrently.
-
-8.  Containerization with Docker
-
-    This application is configured to be built and run as a Docker container.
-
-    **Prerequisites:**
-    - Docker must be installed and running on your system.
-
-    **Building the Docker Image:**
-
-    Open a terminal in the project root directory and run the following command:
+1.  Open a terminal in the project root.
+2.  Run the application using the Maven wrapper:
 
     ```sh
-    docker build -t concurrentuserservice .
+    ./mvnw spring-boot:run
     ```
 
-    This command will build a Docker image named `concurrentuserservice` using the provided `Dockerfile`.
+The service will be available at `http://localhost:8080`.
 
-    **Running the Docker Container:**
+## How to Test
 
-    Once the image is built, you can run the application in a container with this command:
+The project includes a comprehensive shell script for end-to-end testing of the API.
+
+### Prerequisites
+
+-   `curl`
+-   `jq`
+
+### Running the Test Script
+
+1.  Make sure the application is running.
+2.  In a new terminal, make the script executable:
 
     ```sh
-    docker run -p 8080:8080 concurrentuserservice
+    chmod +x src/test/java/com/amex/assesment/concusers/apirequests/test-api.sh
     ```
 
-    This will start the container and map port 8080 on your local machine to port 8080 inside the container. The service will be accessible at `http://localhost:8080`.
+3.  Run the script:
+
+    ```sh
+    ./src/test/java/com/amex/assesment/concusers/apirequests/test-api.sh
+    ```
+
+## Containerization with Docker
+
+This application is configured to be built and run as a Docker container.
+
+**Prerequisites:**
+- Docker must be installed and running on your system.
+
+**Building the Docker Image:**
+
+Open a terminal in the project root directory and run the following command:
+
+```sh
+docker build -t concurrentuserservice:latest .
+```
+
+This command will build a Docker image named `concurrentuserservice` with the `latest` tag.
+
+**Running the Docker Container:**
+
+Once the image is built, you can run the application in a container with this command:
+
+```sh
+docker run -p 8080:8080 concurrentuserservice:latest
+```
+
+This will start the container and map port 8080 on your local machine to port 8080 inside the container. The service will be accessible at `http://localhost:8080`.
