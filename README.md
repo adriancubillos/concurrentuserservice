@@ -35,6 +35,15 @@ The API includes robust validation and error handling:
 -   **Not Found Errors**: Accessing, updating, or deleting a non-existent user will result in a `404 Not Found` error.
 -   **Malformed JSON**: Requests with invalid JSON will be rejected with a `400 Bad Request`.
 
+## Getting Started
+
+To get started with this project, clone the repository to your local machine:
+
+```sh
+git clone https://github.com/adriancubillos/concurrentuserservice.git
+cd concurrentuserservice
+```
+
 ## How to Run
 
 ### Prerequisites
@@ -54,6 +63,22 @@ The API includes robust validation and error handling:
 The service will be available at `http://localhost:8080`.
 
 ## How to Test
+
+### Unit Tests
+
+To run the unit tests for this project, open a terminal in the project root and use the Maven wrapper:
+
+```sh
+./mvnw test
+```
+
+Alternatively, if you have Maven installed globally on your system, you can use the following command:
+
+```sh
+mvn test
+```
+
+### End-to-End API Tests
 
 The project includes a comprehensive shell script for end-to-end testing of the API.
 
