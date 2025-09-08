@@ -1,8 +1,5 @@
 target/
 .idea/
-.mvn/
 .gitignore
 Dockerfile
-mvnw
-mvnw.cmd
 *.log
