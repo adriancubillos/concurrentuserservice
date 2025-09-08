@@ -10,10 +10,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * A thread-safe, in-memory implementation of the {@link UserDatastore}
+ * interface.
+ * This class uses {@link ConcurrentHashMap} and {@link AtomicLong} to ensure
+ * safe
+ * concurrent access without explicit locking.
+ */
 @Repository
 public class InMemoryUserDatastore implements UserDatastore {
 
+    // Thread-safe map to store users
     private final ConcurrentMap<Long, User> users = new ConcurrentHashMap<>();
+    // Thread-safe counter to generate unique IDs
     private final AtomicLong counter = new AtomicLong();
 
     @Override
