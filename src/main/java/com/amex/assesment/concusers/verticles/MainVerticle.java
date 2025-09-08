@@ -22,6 +22,15 @@ public class MainVerticle extends AbstractVerticle {
 
         router.route().handler(BodyHandler.create());
 
+        // Failure handler for decoding errors
+        router.route().failureHandler(ctx -> {
+            if (ctx.failure() instanceof io.vertx.core.json.DecodeException) {
+                ctx.response().setStatusCode(400).end("Invalid JSON format");
+            } else {
+                ctx.next();
+            }
+        });
+
         router.get("/users").handler(userHandler::getAllUsers);
         router.post("/users").handler(userHandler::createUser);
         router.get("/users/:id").handler(userHandler::getUserById);

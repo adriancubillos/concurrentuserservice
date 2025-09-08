@@ -77,7 +77,16 @@ public class UserHandler {
     public void updateUser(RoutingContext context) {
         try {
             long id = Long.parseLong(context.pathParam("id"));
-            final User userDetails = Json.decodeValue(context.getBodyAsString(), User.class);
+            final User userDetails = context.body().asPojo(User.class);
+
+            Set<ConstraintViolation<User>> violations = validator.validate(userDetails);
+            if (!violations.isEmpty()) {
+                String errors = violations.stream().map(ConstraintViolation::getMessage)
+                        .collect(Collectors.joining(", "));
+                context.response().setStatusCode(400).end(errors);
+                return;
+            }
+
             User updatedUser = userService.updateUser(id, userDetails);
             context.response()
                     .setStatusCode(200)
