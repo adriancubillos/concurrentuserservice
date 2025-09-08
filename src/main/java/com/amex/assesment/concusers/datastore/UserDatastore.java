@@ -52,4 +52,9 @@ public interface UserDatastore {
      * @param id The ID of the user to delete.
      */
     void deleteById(long id);
+
+    /**
+     * Clears all users from the datastore. Used for testing purposes.
+     */
+    void clear();
 }

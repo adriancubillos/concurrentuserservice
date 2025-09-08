@@ -54,4 +54,10 @@ public class InMemoryUserDatastore implements UserDatastore {
     public void deleteById(long id) {
         users.remove(id);
     }
+
+    @Override
+    public void clear() {
+        users.clear();
+        counter.set(0);
+    }
 }
