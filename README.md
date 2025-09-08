@@ -91,3 +91,30 @@
         Check the state of the in-memory store after operations.
 
     Concurrency Tests (Optional but Recommended): Outline a simple test case to verify thread safety by having multiple threads attempt to create or modify users concurrently.
+
+8.  Containerization with Docker
+
+    This application is configured to be built and run as a Docker container.
+
+    **Prerequisites:**
+    - Docker must be installed and running on your system.
+
+    **Building the Docker Image:**
+
+    Open a terminal in the project root directory and run the following command:
+
+    ```sh
+    docker build -t concurrentuserservice .
+    ```
+
+    This command will build a Docker image named `concurrentuserservice` using the provided `Dockerfile`.
+
+    **Running the Docker Container:**
+
+    Once the image is built, you can run the application in a container with this command:
+
+    ```sh
+    docker run -p 8080:8080 concurrentuserservice
+    ```
+
+    This will start the container and map port 8080 on your local machine to port 8080 inside the container. The service will be accessible at `http://localhost:8080`.
