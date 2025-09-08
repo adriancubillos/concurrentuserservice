@@ -80,6 +80,10 @@ mvn test
 
 ### End-to-End API Tests
 
+The project includes two ways to perform end-to-end testing of the API.
+
+#### Using the Test Script
+
 The project includes a comprehensive shell script for end-to-end testing of the API.
 
 ### Prerequisites
@@ -101,6 +105,20 @@ The project includes a comprehensive shell script for end-to-end testing of the 
     ```sh
     ./src/test/java/com/amex/assesment/concusers/apirequests/test-api.sh
     ```
+
+#### Using the .http file
+
+As an alternative to the shell script, you can use the `users.http` file located at `src/test/java/com/amex/assesment/concusers/apirequests/users.http` to send requests directly from your IDE.
+
+**Prerequisites:**
+
+- An IDE with a REST client extension that supports `.http` files (e.g., the [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension for Visual Studio Code).
+
+**Running the Requests:**
+
+1.  Make sure the application is running.
+2.  Open the `src/test/java/com/amex/assesment/concusers/apirequests/users.http` file in your IDE.
+3.  Your IDE should display a "Send Request" button or link above each HTTP request block. Click it to execute a request and see the response directly in the editor.
 
 ## Containerization with Docker
 
