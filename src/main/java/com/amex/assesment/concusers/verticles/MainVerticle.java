@@ -22,11 +22,12 @@ public class MainVerticle extends AbstractVerticle {
 
         router.route().handler(BodyHandler.create());
 
-        router.post("/api/v1/users").handler(userHandler::createUser);
-        router.get("/api/v1/users/:id").handler(userHandler::getUserById);
-        router.get("/api/v1/users").handler(userHandler::getAllUsers);
-        router.put("/api/v1/users/:id").handler(userHandler::updateUser);
-        router.delete("/api/v1/users/:id").handler(userHandler::deleteUser);
+        router.get("/users").handler(userHandler::getAllUsers);
+        router.post("/users").handler(userHandler::createUser);
+        router.get("/users/:id").handler(userHandler::getUserById);
+        router.put("/users/:id").handler(userHandler::updateUser);
+        router.put("/users/:id/email").handler(userHandler::updateUserEmail);
+        router.delete("/users/:id").handler(userHandler::deleteUser);
 
         vertx.createHttpServer()
                 .requestHandler(router)

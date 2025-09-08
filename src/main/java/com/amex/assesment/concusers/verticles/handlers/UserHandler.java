@@ -26,7 +26,7 @@ public class UserHandler {
 
     public void createUser(RoutingContext context) {
         try {
-            final User user = Json.decodeValue(context.getBodyAsString(), User.class);
+            final User user = context.body().asPojo(User.class);
 
             Set<ConstraintViolation<User>> violations = validator.validate(user);
             if (!violations.isEmpty()) {
@@ -79,6 +79,22 @@ public class UserHandler {
             long id = Long.parseLong(context.pathParam("id"));
             final User userDetails = Json.decodeValue(context.getBodyAsString(), User.class);
             User updatedUser = userService.updateUser(id, userDetails);
+            context.response()
+                    .setStatusCode(200)
+                    .putHeader("content-type", "application/json; charset=utf-8")
+                    .end(Json.encodePrettily(updatedUser));
+        } catch (UserNotFoundException e) {
+            context.response().setStatusCode(404).end(e.getMessage());
+        } catch (Exception e) {
+            context.response().setStatusCode(500).end(e.getMessage());
+        }
+    }
+
+    public void updateUserEmail(RoutingContext context) {
+        try {
+            long id = Long.parseLong(context.pathParam("id"));
+            String email = context.body().asJsonObject().getString("email");
+            User updatedUser = userService.updateUserEmail(id, email);
             context.response()
                     .setStatusCode(200)
                     .putHeader("content-type", "application/json; charset=utf-8")

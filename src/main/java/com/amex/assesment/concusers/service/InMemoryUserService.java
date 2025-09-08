@@ -45,6 +45,13 @@ public class InMemoryUserService implements UserService {
     }
 
     @Override
+    public User updateUserEmail(long id, String email) {
+        User user = getUserById(id);
+        user.setEmail(email);
+        return userDatastore.save(user);
+    }
+
+    @Override
     public void deleteUser(long id) {
         if (userDatastore.findById(id).isEmpty()) {
             throw new UserNotFoundException("User not found with id: " + id);

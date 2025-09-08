@@ -15,5 +15,7 @@ public interface UserService {
 
     User updateUser(long id, User userDetails) throws UserNotFoundException;
 
+    User updateUserEmail(long id, String email) throws UserNotFoundException;
+
     void deleteUser(long id) throws UserNotFoundException;
 }

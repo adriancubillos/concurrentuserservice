@@ -4,6 +4,7 @@ import com.amex.assesment.concusers.ConcUsersApplication;
 import com.amex.assesment.concusers.datastore.UserDatastore;
 import com.amex.assesment.concusers.model.User;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.junit5.VertxExtension;
@@ -49,7 +50,7 @@ public class UserControllerTest {
     void testCreateAndGetUser(VertxTestContext testContext) {
         User user = new User(0, "Test User", "test@example.com");
 
-        webClient.post(8080, "localhost", "/api/v1/users")
+        webClient.post(8080, "localhost", "/users")
                 .as(BodyCodec.json(User.class))
                 .sendJson(user, testContext.succeeding(response -> {
                     testContext.verify(() -> {
@@ -57,7 +58,7 @@ public class UserControllerTest {
                         User createdUser = response.body();
                         assertEquals("Test User", createdUser.getName());
 
-                        webClient.get(8080, "localhost", "/api/v1/users/" + createdUser.getId())
+                        webClient.get(8080, "localhost", "/users/" + createdUser.getId())
                                 .as(BodyCodec.json(User.class))
                                 .send(testContext.succeeding(getResponse -> {
                                     testContext.verify(() -> {
@@ -74,7 +75,7 @@ public class UserControllerTest {
     void testCreateUserWithInvalidData(VertxTestContext testContext) {
         User user = new User(0, "", "invalid-email");
 
-        webClient.post(8080, "localhost", "/api/v1/users")
+        webClient.post(8080, "localhost", "/users")
                 .as(BodyCodec.string())
                 .sendJson(user, testContext.succeeding(response -> {
                     testContext.verify(() -> {
@@ -89,7 +90,7 @@ public class UserControllerTest {
         User user = new User(0, "Test User", "test@example.com");
         userDatastore.save(user);
 
-        webClient.post(8080, "localhost", "/api/v1/users")
+        webClient.post(8080, "localhost", "/users")
                 .as(BodyCodec.string())
                 .sendJson(user, testContext.succeeding(response -> {
                     testContext.verify(() -> {
@@ -102,14 +103,14 @@ public class UserControllerTest {
     @Test
     void testGetUserByIdWhenUserExists(VertxTestContext testContext) {
         User user = new User(0, "Test User", "test@example.com");
-        webClient.post(8080, "localhost", "/api/v1/users")
+        webClient.post(8080, "localhost", "/users")
                 .as(BodyCodec.json(User.class))
                 .sendJson(user, testContext.succeeding(response -> {
                     testContext.verify(() -> {
                         assertEquals(201, response.statusCode());
                         User createdUser = response.body();
 
-                        webClient.get(8080, "localhost", "/api/v1/users/" + createdUser.getId())
+                        webClient.get(8080, "localhost", "/users/" + createdUser.getId())
                                 .as(BodyCodec.json(User.class))
                                 .send(testContext.succeeding(getResponse -> {
                                     testContext.verify(() -> {
@@ -124,7 +125,7 @@ public class UserControllerTest {
 
     @Test
     void testGetUserByIdWhenUserDoesNotExist(VertxTestContext testContext) {
-        webClient.get(8080, "localhost", "/api/v1/users/999")
+        webClient.get(8080, "localhost", "/users/999")
                 .as(BodyCodec.string())
                 .send(testContext.succeeding(response -> {
                     testContext.verify(() -> {
@@ -137,7 +138,7 @@ public class UserControllerTest {
     @Test
     void testUpdateUserWhenUserExists(VertxTestContext testContext) {
         User user = new User(0, "Original Name", "original@example.com");
-        webClient.post(8080, "localhost", "/api/v1/users")
+        webClient.post(8080, "localhost", "/users")
                 .as(BodyCodec.json(User.class))
                 .sendJson(user, testContext.succeeding(response -> {
                     testContext.verify(() -> {
@@ -145,14 +146,14 @@ public class UserControllerTest {
                         User createdUser = response.body();
 
                         User userDetails = new User(0, "Updated Name", "updated@example.com");
-                        webClient.put(8080, "localhost", "/api/v1/users/" + createdUser.getId())
+                        webClient.put(8080, "localhost", "/users/" + createdUser.getId())
                                 .as(BodyCodec.json(User.class))
                                 .sendJson(userDetails, testContext.succeeding(updateResponse -> {
                                     testContext.verify(() -> {
                                         assertEquals(200, updateResponse.statusCode());
                                         assertEquals("Updated Name", updateResponse.body().getName());
 
-                                        webClient.get(8080, "localhost", "/api/v1/users/" + createdUser.getId())
+                                        webClient.get(8080, "localhost", "/users/" + createdUser.getId())
                                                 .as(BodyCodec.json(User.class))
                                                 .send(testContext.succeeding(getResponse -> {
                                                     testContext.verify(() -> {
@@ -170,7 +171,7 @@ public class UserControllerTest {
     @Test
     void testUpdateUserWhenUserDoesNotExist(VertxTestContext testContext) {
         User userDetails = new User(0, "Updated Name", "updated@example.com");
-        webClient.put(8080, "localhost", "/api/v1/users/999")
+        webClient.put(8080, "localhost", "/users/999")
                 .as(BodyCodec.string())
                 .sendJson(userDetails, testContext.succeeding(response -> {
                     testContext.verify(() -> {
@@ -181,21 +182,39 @@ public class UserControllerTest {
     }
 
     @Test
+    void testUpdateUserEmail(VertxTestContext testContext) {
+        User user = new User(0, "Test User", "test@example.com");
+        User createdUser = userDatastore.save(user);
+
+        JsonObject emailUpdate = new JsonObject().put("email", "new.email@example.com");
+
+        webClient.put(8080, "localhost", "/users/" + createdUser.getId() + "/email")
+                .as(BodyCodec.json(User.class))
+                .sendJsonObject(emailUpdate, testContext.succeeding(response -> {
+                    testContext.verify(() -> {
+                        assertEquals(200, response.statusCode());
+                        assertEquals("new.email@example.com", response.body().getEmail());
+                        testContext.completeNow();
+                    });
+                }));
+    }
+
+    @Test
     void testDeleteUserWhenUserExists(VertxTestContext testContext) {
         User user = new User(0, "To Be Deleted", "delete@example.com");
-        webClient.post(8080, "localhost", "/api/v1/users")
+        webClient.post(8080, "localhost", "/users")
                 .as(BodyCodec.json(User.class))
                 .sendJson(user, testContext.succeeding(response -> {
                     testContext.verify(() -> {
                         assertEquals(201, response.statusCode());
                         User createdUser = response.body();
 
-                        webClient.delete(8080, "localhost", "/api/v1/users/" + createdUser.getId())
+                        webClient.delete(8080, "localhost", "/users/" + createdUser.getId())
                                 .send(testContext.succeeding(deleteResponse -> {
                                     testContext.verify(() -> {
                                         assertEquals(204, deleteResponse.statusCode());
 
-                                        webClient.get(8080, "localhost", "/api/v1/users/" + createdUser.getId())
+                                        webClient.get(8080, "localhost", "/users/" + createdUser.getId())
                                                 .as(BodyCodec.string())
                                                 .send(testContext.succeeding(getResponse -> {
                                                     testContext.verify(() -> {
@@ -211,7 +230,7 @@ public class UserControllerTest {
 
     @Test
     void testDeleteUserWhenUserDoesNotExist(VertxTestContext testContext) {
-        webClient.delete(8080, "localhost", "/api/v1/users/999")
+        webClient.delete(8080, "localhost", "/users/999")
                 .as(BodyCodec.string())
                 .send(testContext.succeeding(response -> {
                     testContext.verify(() -> {
@@ -225,19 +244,19 @@ public class UserControllerTest {
     void testGetAllUsersWhenUsersExist(VertxTestContext testContext) {
         User user1 = new User(0, "User 1", "user1@example.com");
         User user2 = new User(0, "User 2", "user2@example.com");
-        webClient.post(8080, "localhost", "/api/v1/users")
+        webClient.post(8080, "localhost", "/users")
                 .as(BodyCodec.json(User.class))
                 .sendJson(user1, testContext.succeeding(response1 -> {
                     testContext.verify(() -> {
                         assertEquals(201, response1.statusCode());
 
-                        webClient.post(8080, "localhost", "/api/v1/users")
+                        webClient.post(8080, "localhost", "/users")
                                 .as(BodyCodec.json(User.class))
                                 .sendJson(user2, testContext.succeeding(response2 -> {
                                     testContext.verify(() -> {
                                         assertEquals(201, response2.statusCode());
 
-                                        webClient.get(8080, "localhost", "/api/v1/users")
+                                        webClient.get(8080, "localhost", "/users")
                                                 .as(BodyCodec.jsonArray())
                                                 .send(testContext.succeeding(getResponse -> {
                                                     testContext.verify(() -> {
@@ -254,7 +273,7 @@ public class UserControllerTest {
 
     @Test
     void testGetAllUsersWhenNoUsersExist(VertxTestContext testContext) {
-        webClient.get(8080, "localhost", "/api/v1/users")
+        webClient.get(8080, "localhost", "/users")
                 .as(BodyCodec.jsonArray())
                 .send(testContext.succeeding(response -> {
                     testContext.verify(() -> {
