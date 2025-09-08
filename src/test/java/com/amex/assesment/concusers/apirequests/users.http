@@ -1,0 +1,98 @@
+### SETUP
+@hostname = localhost
+@port = 8080
+@host = http://{{hostname}}:{{port}}
+@contentType = application/json
+
+###
+# @name createUser
+POST {{host}}/users
+Content-Type: {{contentType}}
+
+{
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com"
+}
+
+###
+# Positive Test: Get user by ID
+GET {{host}}/users/{{createUser.response.body.id}}
+
+###
+# Positive Test: Update a user's details
+PUT {{host}}/users/{{createUser.response.body.id}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Jane Smith",
+  "email": "jane.smith@example.com"
+}
+
+###
+# Positive Test: Update a user's email
+PUT {{host}}/users/{{createUser.response.body.id}}/email
+Content-Type: {{contentType}}
+
+{
+  "email": "jane.doe.updated@example.com"
+}
+
+###
+# Negative Test: Create a user with a duplicate email (uses the email from the first request)
+POST {{host}}/users
+Content-Type: {{contentType}}
+
+{
+  "name": "Jane Doe",
+  "email": "jane.doe.updated@example.com"
+}
+
+###
+# Positive Test: Delete a user
+DELETE {{host}}/users/{{createUser.response.body.id}}
+
+
+###
+# --- Standalone Tests ---
+# The following tests do not depend on the 'createUser' request and can be run at any time.
+
+###
+# Positive Test: Get all users
+GET {{host}}/users
+
+###
+# Negative Test: Create a user with invalid data
+POST {{host}}/users
+Content-Type: {{contentType}}
+
+{
+  "name": "",
+  "email": "invalid-email"
+}
+
+###
+# Negative Test: Get user by non-existent ID
+GET {{host}}/users/9999
+
+###
+# Negative Test: Update a user with a non-existent ID
+PUT {{host}}/users/9999
+Content-Type: {{contentType}}
+
+{
+  "name": "Non Existent",
+  "email": "non.existent@example.com"
+}
+
+###
+# Negative Test: Update email of a non-existent user
+PUT {{host}}/users/9999/email
+Content-Type: {{contentType}}
+
+{
+  "email": "non.existent.updated@example.com"
+}
+
+###
+# Negative Test: Delete a non-existent user
+DELETE {{host}}/users/9999
