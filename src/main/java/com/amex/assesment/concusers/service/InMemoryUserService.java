@@ -46,6 +46,9 @@ public class InMemoryUserService implements UserService {
 
     @Override
     public User updateUserEmail(long id, String email) {
+        if (userDatastore.existsByEmailAndIdNot(email, id)) {
+            throw new DuplicateUserException("Email " + email + " is already in use by another user.");
+        }
         User user = getUserById(id);
         user.setEmail(email);
         return userDatastore.save(user);

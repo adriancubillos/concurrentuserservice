@@ -47,6 +47,17 @@ public interface UserDatastore {
     boolean existsByEmail(String email);
 
     /**
+     * Checks if a user with the given email already exists, excluding a specific
+     * user ID.
+     *
+     * @param email           The email to check.
+     * @param userIdToExclude The ID of the user to exclude from the check.
+     * @return true if a user with the email exists (excluding the specified user
+     *         ID), false otherwise.
+     */
+    boolean existsByEmailAndIdNot(String email, long userIdToExclude);
+
+    /**
      * Deletes a user by their ID.
      *
      * @param id The ID of the user to delete.

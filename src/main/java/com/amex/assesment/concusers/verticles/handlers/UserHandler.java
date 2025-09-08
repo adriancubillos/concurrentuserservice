@@ -110,6 +110,8 @@ public class UserHandler {
                     .end(Json.encodePrettily(updatedUser));
         } catch (UserNotFoundException e) {
             context.response().setStatusCode(404).end(e.getMessage());
+        } catch (DuplicateUserException e) {
+            context.response().setStatusCode(409).end(e.getMessage());
         } catch (Exception e) {
             context.response().setStatusCode(500).end(e.getMessage());
         }

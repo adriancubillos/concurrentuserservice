@@ -51,6 +51,13 @@ public class InMemoryUserDatastore implements UserDatastore {
     }
 
     @Override
+    public boolean existsByEmailAndIdNot(String email, long userIdToExclude) {
+        return users.values().stream()
+                .filter(u -> u.getId() != userIdToExclude)
+                .anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
+    }
+
+    @Override
     public void deleteById(long id) {
         users.remove(id);
     }
