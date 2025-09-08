@@ -1,19 +1,19 @@
 package com.amex.assesment.concusers.service;
 
+import com.amex.assesment.concusers.exception.UserNotFoundException;
 import com.amex.assesment.concusers.model.User;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserService {
 
     User createUser(User user);
 
-    Optional<User> getUserById(long id);
+    User getUserById(long id) throws UserNotFoundException;
 
     List<User> getAllUsers();
 
-    Optional<User> updateUser(long id, User userDetails);
+    User updateUser(long id, User userDetails) throws UserNotFoundException;
 
-    boolean deleteUser(long id);
+    void deleteUser(long id) throws UserNotFoundException;
 }
