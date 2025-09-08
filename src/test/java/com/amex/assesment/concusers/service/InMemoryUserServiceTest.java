@@ -1,5 +1,7 @@
 package com.amex.assesment.concusers.service;
 
+import com.amex.assesment.concusers.datastore.InMemoryUserDatastore;
+import com.amex.assesment.concusers.datastore.UserDatastore;
 import com.amex.assesment.concusers.exception.UserNotFoundException;
 import com.amex.assesment.concusers.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +15,8 @@ class InMemoryUserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new InMemoryUserService();
+        UserDatastore userDatastore = new InMemoryUserDatastore();
+        userService = new InMemoryUserService(userDatastore);
     }
 
     @Test
